@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:world_time/services/world_time.dart';
+import 'package:world_time/services/locations.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Loading extends StatefulWidget {
   @override
@@ -10,13 +12,17 @@ class Loading extends StatefulWidget {
 class _LoadingState extends State<Loading> {
 
   void getTime() async {
-    WorldTime instance = WorldTime(location: "Kolkata", flag: "india.jpg", url: "Asia/Kolkata");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    WorldTime instance = WorldTime(location: prefs.getString("location") ?? "Kolkata", url: prefs.getString("url") ?? "Asia/Kolkata");
+    Locations locations = Locations();
+    await locations.getLocations();
     await instance.getTime();
     Navigator.pushReplacementNamed(context, '/home', arguments: {
       "location": instance.location,
-      "flag": instance.flag,
       "time": instance.time,
       "isDayTime": instance.isDayTime,
+      "allLocations": locations.locations,
     });
   }
 
