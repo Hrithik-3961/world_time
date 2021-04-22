@@ -11,21 +11,6 @@ class Loading extends StatefulWidget {
 
 class _LoadingState extends State<Loading> {
 
-  void getTime() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    WorldTime instance = WorldTime(location: prefs.getString("location") ?? "Kolkata", url: prefs.getString("url") ?? "Asia/Kolkata");
-    Locations locations = Locations();
-    await locations.getLocations();
-    await instance.getTime();
-    Navigator.pushReplacementNamed(context, '/home', arguments: {
-      "location": instance.location,
-      "time": instance.time,
-      "isDayTime": instance.isDayTime,
-      "allLocations": locations.locations,
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -43,5 +28,32 @@ class _LoadingState extends State<Loading> {
         ),
       ),
     );
+  }
+
+  void getTime() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    Locations locations = Locations();
+    await locations.getLocations();
+    if(prefs.containsKey("url"))
+    {
+      String location = prefs.getString("location") ?? "";
+      String url = prefs.getString("url") ?? "";
+      WorldTime instance = WorldTime(location: location, url: url);
+      await instance.getTime();
+      Navigator.pushReplacementNamed(context, '/home', arguments: {
+        "location": instance.location,
+        "time": instance.time,
+        "isDayTime": instance.isDayTime,
+        "allLocations": locations.locations,
+      });
+    }
+    else
+      {
+        Navigator.pushReplacementNamed(context, '/location', arguments: {
+          "allLocations": locations.locations,
+        });
+      }
   }
 }

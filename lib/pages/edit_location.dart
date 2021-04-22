@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:world_time/services/world_time.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class Location extends StatefulWidget {
   @override
@@ -9,20 +9,20 @@ class Location extends StatefulWidget {
 }
 
 class _LocationState extends State<Location> {
-
   Map data = {};
   List locations = [];
   List filteredLocations = [];
 
   @override
   Widget build(BuildContext context) {
-
     data = data.isNotEmpty ? data : ModalRoute.of(context).settings.arguments;
     locations = data["allLocations"];
-    filteredLocations = filteredLocations.isNotEmpty ? filteredLocations : locations;
+    filteredLocations =
+        filteredLocations.isNotEmpty ? filteredLocations : locations;
     return WillPopScope(
-      onWillPop: (){
-        Navigator.pop(context, data);
+      onWillPop: () {
+        if(data.containsKey("location"))
+          Navigator.pop(context, data);
         return Future.value(true);
       },
       child: Scaffold(
@@ -44,7 +44,8 @@ class _LocationState extends State<Location> {
                   text = text.toLowerCase();
                   setState(() {
                     filteredLocations = locations
-                        .where((string) => string.toLowerCase().contains(text.toLowerCase()))
+                        .where((string) =>
+                            string.toLowerCase().contains(text.toLowerCase()))
                         .toList();
                   });
                 },
@@ -52,6 +53,7 @@ class _LocationState extends State<Location> {
             ),
             Expanded(
               child: Scrollbar(
+                isAlwaysShown: true,
                 child: ListView.builder(
                     physics: BouncingScrollPhysics(),
                     itemCount: filteredLocations.length,
@@ -73,29 +75,41 @@ class _LocationState extends State<Location> {
     );
   }
 
-  Widget getTitle(location)
-  {
-    String title = location.substring(location.lastIndexOf('/') + 1) + ", " +
-                    location.substring(0, location.indexOf('/'));
+  Widget getTitle(location) {
+    String title = location.substring(location.lastIndexOf('/') + 1) +
+        ", " +
+        location.substring(0, location.indexOf('/'));
     return Text(title);
   }
 
-  void updateLocation(index) async
-  {
+  void updateLocation(index) async {
     SmartDialog.showLoading();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String url = filteredLocations[index].toString();
     String location = url.substring(url.lastIndexOf('/') + 1);
     WorldTime instance = WorldTime(location: location, url: url);
     await instance.getTime();
-    await prefs.setString("location", location);
-    await prefs.setString("url", url);
-    SmartDialog.dismiss();
-    Navigator.pop(context, {
-      "location": instance.location,
-      "time": instance.time,
-      "isDayTime": instance.isDayTime,
-      "allLocations": locations,
-    });
+    if(prefs.containsKey("location")) {
+      await prefs.setString("location", location);
+      await prefs.setString("url", url);
+      SmartDialog.dismiss();
+      Navigator.pop(context, {
+        "location": instance.location,
+        "time": instance.time,
+        "isDayTime": instance.isDayTime,
+        "allLocations": locations,
+      });
+    }
+    else{
+      await prefs.setString("location", location);
+      await prefs.setString("url", url);
+      SmartDialog.dismiss();
+      Navigator.pushReplacementNamed(context, '/home', arguments: {
+        "location": instance.location,
+        "time": instance.time,
+        "isDayTime": instance.isDayTime,
+        "allLocations": locations,
+      });
+    }
   }
 }
