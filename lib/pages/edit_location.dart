@@ -95,6 +95,7 @@ class _LocationState extends State<Location> {
       SmartDialog.dismiss();
       Navigator.pop(context, {
         "location": instance.location,
+        "url": instance.url,
         "time": instance.time,
         "isDayTime": instance.isDayTime,
         "allLocations": locations,
@@ -106,6 +107,7 @@ class _LocationState extends State<Location> {
       SmartDialog.dismiss();
       Navigator.pushReplacementNamed(context, '/home', arguments: {
         "location": instance.location,
+        "url": instance.url,
         "time": instance.time,
         "isDayTime": instance.isDayTime,
         "allLocations": locations,

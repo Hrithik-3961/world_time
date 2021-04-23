@@ -33,7 +33,6 @@ class _LoadingState extends State<Loading> {
   void getTime() async {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
     Locations locations = Locations();
     await locations.getLocations();
     if(prefs.containsKey("url"))
@@ -44,6 +43,7 @@ class _LoadingState extends State<Loading> {
       await instance.getTime();
       Navigator.pushReplacementNamed(context, '/home', arguments: {
         "location": instance.location,
+        "url": instance.url,
         "time": instance.time,
         "isDayTime": instance.isDayTime,
         "allLocations": locations.locations,
